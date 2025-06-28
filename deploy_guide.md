@@ -124,6 +124,11 @@ Fill in these settings exactly:
 **Issue: "Port already in use"**
 - Solution: This is normal - Render handles port management automatically
 
+**Issue: "Getting requirements to build wheel: error"**
+- ✅ **FIXED**: Updated `requirements.txt` with compatible versions
+- ✅ **FIXED**: Added `runtime.txt` to specify Python version
+- ✅ **FIXED**: Updated app.py to work with older OpenAI API
+
 ---
 
 ## Step 5: Post-Deployment
@@ -185,6 +190,12 @@ https://ai-story-generator.onrender.com
 2. First request after sleep takes longer
 3. Consider upgrading to paid plan for better performance
 
+### Build Wheel Error (FIXED)
+- ✅ Updated package versions in `requirements.txt`
+- ✅ Added `runtime.txt` for Python version
+- ✅ Modified app.py for API compatibility
+- ✅ Test with `python test_deployment.py`
+
 ---
 
 ## 📞 Getting Help
@@ -216,9 +227,37 @@ git add .
 git commit -m "Update description"
 git push origin main
 
+# Test deployment compatibility locally
+python test_deployment.py
+
 # Check deployment status
 # (Use Render dashboard - no CLI needed)
 
 # View application logs
 # (Available in Render dashboard under "Logs" tab)
-``` 
+```
+
+---
+
+## 🔄 Recent Fixes Applied
+
+### Build Error Resolution
+- **Problem:** "Getting requirements to build wheel: error"
+- **Solution:** Updated to compatible package versions
+- **Files Modified:**
+  - `requirements.txt` - Conservative, stable versions
+  - `runtime.txt` - Python 3.11.7 specification
+  - `app.py` - OpenAI API compatibility (v0.28.1)
+  - `render.yaml` - Updated Python version
+
+### Package Versions Used
+```
+Flask==2.2.5
+openai==0.28.1
+Pillow==9.5.0
+Werkzeug==2.2.3
+gunicorn==20.1.0
+requests==2.31.0
+```
+
+These versions are tested and known to work on Render's infrastructure. 

@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
 import base64
-from openai import OpenAI
+import openai
 from PIL import Image
 from io import BytesIO
 import uuid
 from werkzeug.utils import secure_filename
+import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -18,7 +19,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['GENERATED_FOLDER'], exist_ok=True)
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -61,30 +62,29 @@ def upload_file():
         for idx, prompt in enumerate(prompts, 1):
             print(f"Generating image {idx}...")
             
-            with open(avatar_path, "rb") as avatar_file_obj:
-                result = client.images.edit(
-                    model="gpt-image-1",
-                    image=[avatar_file_obj],
-                    prompt=prompt,
-                    size="1024x1024",
-                    output_format="jpeg"
-                )
-                
-                # Decode and save the image
-                image_base64 = result.data[0].b64_json
-                image_bytes = base64.b64decode(image_base64)
-                image = Image.open(BytesIO(image_bytes))
-                
-                # Save with unique filename
-                image_filename = f"story_image_{uuid.uuid4().hex}.jpg"
-                image_path = os.path.join(app.config['GENERATED_FOLDER'], image_filename)
-                image.save(image_path, format="JPEG", quality=90)
-                
-                generated_images.append({
-                    'filename': image_filename,
-                    'prompt': prompt,
-                    'index': idx
-                })
+            # Generate image from prompt
+            result = openai.Image.create(
+                prompt=prompt,
+                n=1,
+                size="1024x1024"
+            )
+            
+            # Download and save the image
+            image_url = result['data'][0]['url']
+            response = requests.get(image_url)
+            image_bytes = response.content
+            image = Image.open(BytesIO(image_bytes))
+            
+            # Save with unique filename
+            image_filename = f"story_image_{uuid.uuid4().hex}.jpg"
+            image_path = os.path.join(app.config['GENERATED_FOLDER'], image_filename)
+            image.save(image_path, format="JPEG", quality=90)
+            
+            generated_images.append({
+                'filename': image_filename,
+                'prompt': prompt,
+                'index': idx
+            })
         
         return jsonify({
             'success': True,
