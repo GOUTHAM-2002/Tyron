@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
 import base64
-import openai
+from openai import OpenAI
 from PIL import Image
 from io import BytesIO
 import uuid
@@ -19,7 +19,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['GENERATED_FOLDER'], exist_ok=True)
 
 # Initialize OpenAI client
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -63,14 +63,15 @@ def upload_file():
             print(f"Generating image {idx}...")
             
             # Generate image from prompt
-            result = openai.Image.create(
+            result = client.images.generate(
+                model="dall-e-3",
                 prompt=prompt,
                 n=1,
                 size="1024x1024"
             )
             
             # Download and save the image
-            image_url = result['data'][0]['url']
+            image_url = result.data[0].url
             response = requests.get(image_url)
             image_bytes = response.content
             image = Image.open(BytesIO(image_bytes))

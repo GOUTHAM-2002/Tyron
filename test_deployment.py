@@ -9,7 +9,7 @@ def test_imports():
         import flask
         print("✓ Flask imported successfully")
         
-        import openai
+        from openai import OpenAI
         print("✓ OpenAI imported successfully")
         
         from PIL import Image
@@ -39,13 +39,25 @@ def test_basic_functionality():
         print(f"❌ Flask app creation failed: {e}")
         return False
 
+def test_openai_client():
+    """Test OpenAI client creation"""
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key="test-key")
+        print("✓ OpenAI client created successfully")
+        return True
+    except Exception as e:
+        print(f"❌ OpenAI client creation failed: {e}")
+        return False
+
 if __name__ == "__main__":
     print("Testing deployment compatibility...\n")
     
     imports_ok = test_imports()
     flask_ok = test_basic_functionality()
+    openai_ok = test_openai_client()
     
-    if imports_ok and flask_ok:
+    if imports_ok and flask_ok and openai_ok:
         print("\n✅ All tests passed! Ready for deployment.")
     else:
         print("\n❌ Some tests failed. Check requirements.txt") 
